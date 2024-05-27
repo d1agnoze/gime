@@ -15,7 +15,11 @@ func TestGetEmbedYTURL(t *testing.T) {
 	t.Run("Test with standart Url", func(t *testing.T) {
 		res, err := GetEmbedYTURL(testUrls[0])
 		println(res)
-		if err != nil && strings.Contains(res, "embed") {
+		if res == "" {
+			t.Errorf("GetEmbedYTURL() error = %v", err)
+			return
+		}
+		if err != nil || !strings.Contains(res, "embed") {
 			t.Errorf("GetEmbedYTURL() error = %v", err)
 			return
 		}
@@ -24,6 +28,10 @@ func TestGetEmbedYTURL(t *testing.T) {
 	t.Run("Test with shortened Url", func(t *testing.T) {
 		res, err := GetEmbedYTURL(testUrls[1])
 		println(res)
+		if res == "" {
+			t.Errorf("GetEmbedYTURL() error = %v", err)
+			return
+		}
 		if err != nil && strings.Contains(res, "embed") {
 			t.Errorf("GetEmbedYTURL() error = %v", err)
 			return
@@ -33,6 +41,10 @@ func TestGetEmbedYTURL(t *testing.T) {
 	t.Run("Test with shortened Url with query parameters", func(t *testing.T) {
 		res, err := GetEmbedYTURL(testUrls[2])
 		println(res)
+		if res == "" {
+			t.Errorf("GetEmbedYTURL() error = %v", err)
+			return
+		}
 		if err != nil && strings.Contains(res, "embed") && strings.Contains(res, "si=PhsiVtemJm3EEE-v") {
 			t.Errorf("GetEmbedYTURL() error = %v", err)
 			return
@@ -41,6 +53,10 @@ func TestGetEmbedYTURL(t *testing.T) {
 	t.Run("Test with shortened Url with query parameters and time parameter", func(t *testing.T) {
 		res, err := GetEmbedYTURL(testUrls[3])
 		println(res)
+		if res == "" {
+			t.Errorf("GetEmbedYTURL() error = %v", err)
+			return
+		}
 		if err != nil && strings.Contains(res, "embed") && strings.Contains(res, "t=818s") && strings.Contains(res, "si=PhsiVtemJm3EEE-v") {
 			t.Errorf("GetEmbedYTURL() error = %v", err)
 			return

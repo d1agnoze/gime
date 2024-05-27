@@ -8,10 +8,18 @@ import (
 
 func GetEmbedYTURL(videoURL string) (string, error) {
 	parsedURL, err := url.Parse(videoURL)
+	var videoID string
+
 	if err != nil {
 		return "", err
 	}
-	var videoID string
+	if !(strings.Contains(parsedURL.Host, "youtube.com") || strings.Contains(parsedURL.Host, "youtu.be")) {
+		return "", fmt.Errorf("Not a youtube url")
+	}
+	if strings.Contains(parsedURL.Host, "youtube.com") && strings.HasPrefix(parsedURL.Path, "/embed/") {
+		return videoURL, nil
+	}
+
 	queryParams := parsedURL.Query()
 	if videoID = queryParams.Get("v"); videoID == "" {
 		// Handle the case for youtu.be links with or without query parameters
@@ -23,12 +31,21 @@ func GetEmbedYTURL(videoURL string) (string, error) {
 	}
 
 	embedURL := fmt.Sprintf("https://www.youtube.com/embed/%s", videoID)
+	embedURL = strings.TrimSpace(embedURL)
 	// Include optional parameters if available
+	parameters := []string{}
 	if si := queryParams.Get("si"); si != "" {
-		embedURL = fmt.Sprintf("%s?si=%s", embedURL, si)
+		parameters = append(parameters, "si="+si)
 	}
 	if t := queryParams.Get("t"); t != "" {
-		embedURL = fmt.Sprintf("%s&t=%s", embedURL, t)
+		parameters = append(parameters, "t="+t)
+	}
+	// enable autoplay
+	if true {
+		parameters = append(parameters, "autoplay=1")
+	}
+	if len(parameters) > 0 {
+		embedURL = fmt.Sprintf("%s?%s", embedURL, strings.Join(parameters, "&"))
 	}
 
 	return embedURL, nil
