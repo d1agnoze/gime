@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	i "gime/internal"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 const TITLE = "gime"
@@ -28,6 +31,20 @@ func NewApp(m *i.Media) *App {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
+	screen, err := getScreen(ctx)
+	if err != nil {
+		return
+	}
+	size_X, size_Y := runtime.WindowGetSize(a.ctx)
+	appSize := i.Coordinate{X: size_X, Y: size_Y}
+
+	appPostion := i.Position{Name: position}
+	appCoordinate := appPostion.GetCoordinate(appSize, *screen)
+	if appCoordinate == nil {
+		return
+	}
+	runtime.WindowSetPosition(a.ctx, appCoordinate.X, appCoordinate.Y)
 }
 
 func (a *App) shutdown(ctx context.Context) {
@@ -65,4 +82,17 @@ func (app *App) Run() {
 	if err != nil {
 		println("Error:", err.Error())
 	}
+}
+
+func getScreen(ctx context.Context) (*i.Coordinate, error) {
+	screens, err := runtime.ScreenGetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, screen := range screens {
+		if screen.IsPrimary {
+			return &i.Coordinate{X: screen.PhysicalSize.Width, Y: screen.PhysicalSize.Height}, nil
+		}
+	}
+	return nil, fmt.Errorf("no primary screen found")
 }

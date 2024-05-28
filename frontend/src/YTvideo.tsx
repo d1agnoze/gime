@@ -18,7 +18,6 @@ const YTVideo = ({ media }: { media: Media }) => {
     <div className="yt">
       <div className="yt__fg">
         <iframe
-          sandbox="allow-scripts"
           ref={video}
           src={media.Link}
           title="YouTube video player"

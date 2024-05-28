@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -13,6 +14,9 @@ const VERSION = "v0.0.1"
 
 var filePath string
 var media i.Media
+var isImageShortCut bool
+var isVideoShortCut bool
+var position string = ""
 
 var root = &cobra.Command{
 	Use:   "gime",
@@ -24,7 +28,32 @@ var root = &cobra.Command{
   GIME
   ==========================================================================
   A simple program to display images and youtube links from the command line`,
+
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Lookup("mime").Changed &&
+			(cmd.Flags().Lookup("img").Changed || cmd.Flags().Lookup("vid").Changed) {
+			return fmt.Errorf("Cannot use --mime and --img or --vid together")
+		}
+		if i.IsInputFromPipe() && cmd.Flags().Lookup("file").Changed {
+			return fmt.Errorf("Cannot use --file and STDIN together")
+		}
+		if cmd.Flags().Lookup("img").Changed && cmd.Flags().Lookup("vid").Changed {
+			return fmt.Errorf("Cannot use --img and --vid together")
+		}
+
+		if isImageShortCut {
+			media.Mime = string(i.I_wildcard)
+		}
+		if isVideoShortCut {
+			media.Mime = string(i.V_youtube)
+		}
+		position = strings.TrimSpace(position)
+		position = strings.ToUpper(position)
+
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
+
 		if err := inputHandler(); err != nil {
 			fmt.Println(err.Error())
 			cmd.Help()
@@ -34,7 +63,7 @@ var root = &cobra.Command{
 			fmt.Printf("%s", err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("media link: %s\nmime type: %s", media.Link, media.Mime)
+		fmt.Printf("media link: %s\nmime type: %s\n", media.Link, media.Mime)
 		app := NewApp(&media)
 		app.Run()
 	},
@@ -44,8 +73,10 @@ func init() {
 	root.Flags().StringVarP(&media.Mime, "mime", "m", "", "input mime types")
 	root.Flags().StringVarP(&filePath, "file", "f", "", "path to the file")
 
-	root.Flags().StringVarP(&media.Mime, "img", "i", string(i.I_wildcard), "shorthand for image/*")
-	root.Flags().StringVarP(&media.Mime, "vid", "v", string(i.V_youtube), "shorthand for video/x-youtube")
+	root.Flags().BoolVarP(&isImageShortCut, "img", "i", false, "shorthand for image/*")
+	root.Flags().BoolVarP(&isVideoShortCut, "vid", "v", false, "shorthand for video/x-youtube")
+
+	root.Flags().StringVarP(&position, "position", "p", "", "window position (TL, TR, BL, BR)")
 }
 
 func Excute() {

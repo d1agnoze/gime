@@ -1,11 +1,14 @@
 package internal
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
+	"net/url"
 	"os"
-  "io"
-  "bufio"
+	"strings"
+	"unicode"
 )
 
 func IsInputFromPipe() bool {
@@ -58,3 +61,25 @@ func ReadFromPipe(r io.Reader, s *string) error {
 	return nil
 }
 
+
+// cleanString removes all quotes and whitespace from the input string
+func cleanString(str string) string {
+    var builder strings.Builder
+    for _, ch := range str {
+        if ch != '"' && ch != '\'' && ch != '`' && !unicode.IsSpace(ch) {
+            builder.WriteRune(ch)
+        }
+    }
+    return builder.String()
+}
+
+// isValidURL checks if the given string is a valid URL
+func isValidURL(str string) bool {
+    u, err := url.Parse(str)
+    if err != nil {
+        return false
+    }
+
+    // Check if the URL has a valid scheme and host
+    return u.Scheme != "" && u.Host != ""
+}
