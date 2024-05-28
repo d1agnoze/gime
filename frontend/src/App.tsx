@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     GetMedia().then((result) => {
       setMedia(result);
-    });
+    }).catch(err => console.log(err));
   }, []);
 
   useEffect(() => {
