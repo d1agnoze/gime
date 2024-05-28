@@ -19,6 +19,8 @@ const (
 	I_gif  Mimetype = "image/gif"
 	I_jpeg Mimetype = "image/jpeg"
 	I_webp Mimetype = "image/webp"
+  // for -i flag
+  I_wildcard Mimetype = "image/*"
 )
 
 func (m *Media) MediaProcess() error {

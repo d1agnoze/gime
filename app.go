@@ -1,8 +1,7 @@
-package app
+package main
 
 import (
 	"context"
-	"embed"
 	i "gime/internal"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -19,16 +18,12 @@ const MIN_H = 200
 
 // App struct
 type App struct {
-	ctx    context.Context
-	assets embed.FS
-	media  i.Media
+	ctx   context.Context
+	media i.Media
 }
 
-func NewApp(a *embed.FS, m *i.Media) *App {
-	return &App{
-		assets: *a,
-		media:  *m,
-	}
+func NewApp(m *i.Media) *App {
+	return &App{media: *m}
 }
 
 func (a *App) startup(ctx context.Context) {
@@ -51,7 +46,7 @@ func (app *App) Run() {
 			&i.Media{},
 		},
 		AssetServer: &assetserver.Options{
-			Assets: app.assets,
+			Assets: assets,
 		},
 		Windows: &windows.Options{
 			Theme:               windows.Dark,

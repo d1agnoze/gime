@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 import (
 	"errors"
@@ -8,12 +8,12 @@ import (
   "bufio"
 )
 
-func isInputFromPipe() bool {
+func IsInputFromPipe() bool {
 	fileInfo, _ := os.Stdin.Stat()
 	return fileInfo.Mode()&os.ModeCharDevice == 0
 }
 
-func getFile() (*os.File, error) {
+func GetFile(filePath string) (*os.File, error) {
 	if filePath == "" {
 		return nil, errors.New("Please input a file")
 	}

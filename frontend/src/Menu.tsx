@@ -31,12 +31,15 @@ const Menu = () => {
     },
     {
       key: ["y"],
-      callback: ( ) => {
-        if (media?.Link == null) return;
+      callback: () => {
+        if (media?.Link == null) {
+          console.log("no link");
+          return;
+        }
         navigator.clipboard.writeText(media.Link);
       },
       desc: "Copy media link",
-    }
+    },
   ];
 
   const handleKeys = (e: KeyboardEvent) => {
