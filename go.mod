@@ -5,6 +5,7 @@ go 1.21
 toolchain go1.22.3
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.4
 	github.com/spf13/cobra v1.8.0
 	github.com/wailsapp/wails/v2 v2.8.2
 )
