@@ -58,12 +58,17 @@ func (app *App) Run() {
 		MinWidth:  MIN_W,
 		MinHeight: MIN_H,
 		Frameless: true,
+    AlwaysOnTop: true,
 		Bind: []interface{}{
 			app,
 			&i.Media{},
 		},
 		AssetServer: &assetserver.Options{
 			Assets: assets,
+		},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "c9c8fd93-6758-4144-87d1-34bdb0a8bd60",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
 		},
 		Windows: &windows.Options{
 			Theme:               windows.Dark,
@@ -95,4 +100,7 @@ func getScreen(ctx context.Context) (*i.Coordinate, error) {
 		}
 	}
 	return nil, fmt.Errorf("no primary screen found")
+}
+
+func (*App) onSecondInstanceLaunch(secondInstanceData options.SecondInstanceData) {
 }

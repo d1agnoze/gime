@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/spf13/cobra"
 
 	i "gime/internal"
@@ -22,7 +24,7 @@ var root = &cobra.Command{
 	Use:   "gime",
 	Short: "Gime is a simple program to display web image and youtube link",
 	Example: `use file flag: gime --mime=image/png --file=path/to/file.png
-  or pipe from stdin: echo image/link.png | gime --mime=image/png `,
+or pipe from stdin: echo image/link.png | gime --img `,
 	Version: VERSION,
 	Long: `
   GIME
@@ -73,8 +75,8 @@ func init() {
 	root.Flags().StringVarP(&media.Mime, "mime", "m", "", "input mime types")
 	root.Flags().StringVarP(&filePath, "file", "f", "", "path to the file")
 
-	root.Flags().BoolVarP(&isImageShortCut, "img", "i", false, "shorthand for image/*")
-	root.Flags().BoolVarP(&isVideoShortCut, "vid", "v", false, "shorthand for video/x-youtube")
+	root.Flags().BoolVar(&isImageShortCut, "img", false, "shorthand for image/*")
+	root.Flags().BoolVar(&isVideoShortCut, "vid", false, "shorthand for video/x-youtube")
 
 	root.Flags().StringVarP(&position, "position", "p", "", "window position (TL, TR, BL, BR)")
 }
@@ -91,21 +93,44 @@ func Excute() {
 func inputHandler() error {
 	var err error
 	if i.IsInputFromPipe() {
-		//NOTE: PIPE
+		// NOTE: PIPE
 		if err = i.ReadFromPipe(os.Stdin, &media.Link); err != nil {
 			return fmt.Errorf("%s", err.Error())
 		}
 	} else {
-		//NOTE: file
+		// NOTE: file
 		var file *os.File
 		if file, err = i.GetFile(filePath); err != nil {
 			return fmt.Errorf("%s", err.Error())
 		}
-
 		defer file.Close()
 
-		if err = i.ReadFromFile(file, &media.Link); err != nil {
-			return fmt.Errorf("%s", err.Error())
+		// CHECK IF A TEXT FILE OR A IMAGE FILE
+		mtype, err := mimetype.DetectReader(file)
+		if err != nil {
+			return fmt.Errorf("Failed to dected mimetype")
+		}
+
+		// IF IMAGE: change m.Link to the absolute filepath
+		if strings.Contains(mtype.String(), "image") {
+			fileName := file.Name()
+			absPath, err := filepath.Abs(fileName)
+			if err != nil {
+				return fmt.Errorf("Failed to get filepath")
+			}
+			media.Link = absPath
+
+			//=======================
+			// IF VIDEO
+		} else if strings.Contains(mtype.String(), "video") {
+			return i.ERR_UNSUPPORT_MIME
+		} else {
+
+			//=======================
+			// IF TEXTS
+			if err = i.ReadFromFile(file, &media.Link); err != nil {
+				return fmt.Errorf("%s", err.Error())
+			}
 		}
 	}
 	return nil
