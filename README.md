@@ -1,8 +1,8 @@
 <p align="center">
 <img width="500" height="200" src="./GIME.png" alt="gime">
 <br /> <br />
-<img alt="GitHub Tag" src="https://img.shields.io/github/v/tag/d1agnoze/gime">
-<img alt="GitHub Release" src="https://img.shields.io/github/v/release/d1agnoze/gime">
+<img alt="GitHub Tag" src="https://img.shields.io/github/v/tag/d1agnoze/gime?include_prereleases">
+<img alt="GitHub Release" src="https://img.shields.io/github/v/release/d1agnoze/gime?include_prereleases">
 <br/>
 <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/d1agnoze/gime">
 <img alt="License" src="https://img.shields.io/badge/License-MIT-green.svg"/>
