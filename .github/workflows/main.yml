@@ -1,0 +1,78 @@
+name: Wails build
+on:
+  push:
+    tags:
+    # Match any new tag
+      - '*'
+
+env:
+  # Necessary for most environments as build failure can occur due to OOM issues
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  build:
+    strategy:
+    # Failure in one platform build won't impact the others
+      fail-fast: false
+      matrix:
+        build:
+          - name: Gime
+            platform: linux/amd64
+            os: ubuntu-latest
+          - name: Gime
+            platform: windows/amd64
+            os: windows-latest
+    runs-on: ${{ matrix.build.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: action/setup-node@v4
+        with:
+            node-version: 20
+      - uses: action/setup-go@v5
+        with:
+            check-latest: true
+            go-version: '1.22.3'
+      - name: Install UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          install-only: true
+          # install wails
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+        shell: bash
+      - name: Install Linux Wails deps
+        if: matrix.build.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install libgtk-3-0 libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu
+        shell: bash
+      # Building step
+      - name: Build App
+        if: runner.os == 'Linux'
+        working-directory: '.'
+        run: wails build --platform ${{matrix.build.platform}} --upx
+        shell: bash
+      - name: Build Windows App
+        if: runner.os == 'Windows'
+        working-directory: '.'
+        run: wails build --platform ${{matrix.build.platform}} --windowsconsole --upx
+        shell: bash
+      - name: Add Linux perms
+        if: runner.os  == 'Linux'
+        working-directory: '.'
+        run: chmod +x build/bin/*
+        shell: bash
+        # Upload build assets
+      - uses: actions/upload-artifact@v3
+        with:
+            name: Wails Build ${{runner.os}} Gime
+            path: |
+                */bin/
+                *\bin\*
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+            files: |
+                */bin/*
